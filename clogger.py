@@ -7,7 +7,7 @@ import os
 
 
 class ColorFormatter(logging.Formatter):
-    def __init__(self, *args: str, **kwargs: str)
+    def __init__(self, *args: str, **kwargs: str):
         super().__init__(*args, **kwargs)
         
         GREY = "\x1b[31;20m"
