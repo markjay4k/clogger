@@ -7,19 +7,19 @@ import os
 
 
 class ColorFormatter(logging.Formatter):
-    def __init__(self, *args: str, **kwargs: str:)
+    def __init__(self, *args: str, **kwargs: str)
         super().__init__(*args, **kwargs)
         
         GREY = "\x1b[31;20m"
         YELLOW = "\x1b[33;20m"
-        RED = "\x1b[36;20m"
+        RED = "\x1b[35;20m"
         BOLD_RED = "\x1b[36;1m"
         
         self.colors = {
             logging.DEBUG: GREY,
             logging.INFO: GREY,
             logging.WARNING: YELLOW,
-            logging.ERROR: BOLD_RED,
+            logging.ERROR: RED,
             logging.CRITICAL: BOLD_RED,
         }
 
