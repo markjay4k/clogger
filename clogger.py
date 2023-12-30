@@ -7,28 +7,31 @@ import os
 
 
 class ColorFormatter(logging.Formatter):
-    def __init__(self, *args: str, **kwargs: str):
+    def __init__(self, *args: str, **kwargs: str) -> None:
         super().__init__(*args, **kwargs)
         
-        GREY = "\x1b[31;20m"
+        GREY = "\x1b[36;20m"
+        GREEN = "\x1b[32;20m"
         YELLOW = "\x1b[33;20m"
-        RED = "\x1b[35;20m"
-        BOLD_RED = "\x1b[36;1m"
+        RED = "\x1b[31;20m"
+        BOLD_RED = "\x1b[31;1m"
+        ITALIC = '\033[3m'
+        BOLD = '\033[1m'
+        END = '\033[0m'    
         
         self.colors = {
             logging.DEBUG: GREY,
-            logging.INFO: GREY,
+            logging.INFO: GREEN,
             logging.WARNING: YELLOW,
             logging.ERROR: RED,
             logging.CRITICAL: BOLD_RED,
         }
-
         self._fmts = {
             level: self.add_colors(level) for level in self.colors
         }
 
     def add_colors(self, level: int) -> str:
-        _color = self.colors.get(level)
+        _color = self.colors[level]
         RESET = "\x1b[0m"
         return self._style._fmt.replace('#c', _color).replace('#r', RESET)
 
@@ -56,19 +59,21 @@ def log(
     try:
         level = loglevel[level.upper()]
     except (KeyError, AttributeError) as e:
-        _err = f'invalid level {e}: using default value "INFO" instead'
+        _err = f'invalid level {e}: using default value "INFO"'
         level = logging.INFO
     else:
         _err = None
+    
 
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
     ftime = '{asctime:15s}'
+    msecs = '{msecs:03.0f}'
     module = '{module:7s}'
     clevel = '#c{levelname:8s}#r'
     message = '{message}'
     formatter = ColorFormatter(
-        fmt=f'{ftime}| {module} {clevel} | {message}',
+        fmt=f'{ftime}.{msecs}| {module} {clevel} | {message}',
         datefmt='%Y-%m-%d %H:%M:%S',
         style='{'
    )
