@@ -1,9 +1,48 @@
 #!/usr/bin/env python3
 
 from logging.handlers import RotatingFileHandler
+from dataclasses import dataclass
 import logging
 import sys
 import os
+
+
+@dataclass
+class mods:
+    _aqua: str = '\x1b[36;20m'
+    _green: str = '\x1b[32;20m'
+    _yellow: str = '\x1b[33;20m'
+    _red: str = '\x1b[31;20m'
+    _uncolor: str = '\x1b[0m'
+    _bold: str = '\033[1m'
+    _unbold: str = '\033[0m'
+
+    def bold(self, text: str) -> str:
+        return f'{self._bold}{text}{self._unbold}'
+
+    def aqua(self, text: str) -> str:
+        return f'{self._aqua}{text}{self._uncolor}'
+
+    def green(self, text: str) -> str:
+        return f'{self._green}{text}{self._uncolor}'
+
+    def yellow(self, text: str) -> str:
+        return f'{self._yellow}{text}{self._uncolor}'
+
+    def red(self, text: str) -> str:
+        return f'{self._red}{text}{self._uncolor}'
+
+    def baqua(self, text: str) -> str:
+        return f'{self._aqua}{self._bold}{text}{self._unbold}{self._uncolor}'
+
+    def bgreen(self, text: str) -> str:
+        return f'{self._green}{self._bold}{text}{self._unbold}{self._uncolor}'
+
+    def byellow(self, text: str) -> str:
+        return f'{self._yellow}{self._bold}{text}{self._unbold}{self._uncolor}'
+
+    def bred(self, text: str) -> str:
+        return f'{self._red}{self._bold}{text}{self._unbold}{self._uncolor}'
 
 
 class ColorFormatter(logging.Formatter):
@@ -15,10 +54,7 @@ class ColorFormatter(logging.Formatter):
         YELLOW = "\x1b[33;20m"
         RED = "\x1b[31;20m"
         BOLD_RED = "\x1b[31;1m"
-        ITALIC = '\033[3m'
-        BOLD = '\033[1m'
-        END = '\033[0m'    
-        
+
         self.colors = {
             logging.DEBUG: GREY,
             logging.INFO: GREEN,
@@ -46,6 +82,7 @@ def log(
         max_bytes: int = 524288,
         backup_count: int = 2,
         logger_name: str = __name__,
+        msecs: bool = True,
     ) -> logging.Logger:
     
     loglevel = {
@@ -55,25 +92,28 @@ def log(
         'ERROR': logging.ERROR,
         'CRITITCAL': logging.CRITICAL
     }
-
+    mod = mods()
+    
     try:
         level = loglevel[level.upper()]
     except (KeyError, AttributeError) as e:
-        _err = f'invalid level {e}: using default value "INFO"'
+        err_message = f'invalid level {e}: using default value "INFO"'
         level = logging.INFO
     else:
-        _err = None
-    
+        err_message = None
 
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
-    ftime = '{asctime:15s}'
-    msecs = '{msecs:03.0f}'
-    module = '{module:7s}'
-    clevel = '#c{levelname:8s}#r'
+    asctime = '{asctime:15s}'
+    module = '{module:>7s}'
+    levelname = '#c{levelname:>8s}#r'
     message = '{message}'
+    if msecs:
+        _msecs = '.{msecs:03.0f}'
+    else:
+        _msecs = ''
     formatter = ColorFormatter(
-        fmt=f'{ftime}.{msecs}| {module} {clevel} | {message}',
+        fmt=f'{asctime}{_msecs}| {mod.aqua(module)} {levelname}| {message}',
         datefmt='%Y-%m-%d %H:%M:%S',
         style='{'
    )
@@ -92,7 +132,7 @@ def log(
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
-    if _err is not None:
-        logger.warning(f'{_err}. level options: {list(loglevel.keys())}')
+    if err_message is not None:
+        logger.warning(f'{err_mesage}. level options: {list(loglevel.keys())}')
     return logger
 
