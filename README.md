@@ -22,3 +22,11 @@ A simple python logger with a funny name
     log.error('error message')
     log.critical('critical message')
 ```
+
+```bash
+    2024-02-18 19:03:25|    test    DEBUG| debug message
+    2024-02-18 19:03:25|    test     INFO| info message
+    2024-02-18 19:03:25|    test  WARNING| warning message
+    2024-02-18 19:03:25|    test    ERROR| error message
+    2024-02-18 19:03:25|    test CRITICAL| critical message
+```
