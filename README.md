@@ -11,7 +11,7 @@ A simple python logger with a funny name
 
 ## USAGE
 
-    ```python
+```python
     import clogger
 
 
@@ -21,4 +21,4 @@ A simple python logger with a funny name
     log.warning('warning message')
     log.error('error message')
     log.critical('critical message')
-    ```
+```
