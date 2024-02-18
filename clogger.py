@@ -21,28 +21,16 @@ class mods:
         return f'{self._bold}{text}{self._unbold}'
 
     def aqua(self, text: str) -> str:
-        return f'{self._aqua}{text}{self._uncolor}'
+        return f'{self._aqua}{self._bold}{text}{self._unbold}{self._uncolor}'
 
     def green(self, text: str) -> str:
-        return f'{self._green}{text}{self._uncolor}'
+        return f'{self._green}{self._bold}{text}{self._unbold}{self._uncolor}'
 
     def yellow(self, text: str) -> str:
         return f'{self._yellow}{text}{self._uncolor}'
 
     def red(self, text: str) -> str:
         return f'{self._red}{text}{self._uncolor}'
-
-    def baqua(self, text: str) -> str:
-        return f'{self._aqua}{self._bold}{text}{self._unbold}{self._uncolor}'
-
-    def bgreen(self, text: str) -> str:
-        return f'{self._green}{self._bold}{text}{self._unbold}{self._uncolor}'
-
-    def byellow(self, text: str) -> str:
-        return f'{self._yellow}{self._bold}{text}{self._unbold}{self._uncolor}'
-
-    def bred(self, text: str) -> str:
-        return f'{self._red}{self._bold}{text}{self._unbold}{self._uncolor}'
 
 
 class ColorFormatter(logging.Formatter):
@@ -76,13 +64,24 @@ class ColorFormatter(logging.Formatter):
         return super().format(record)
 
 
+def max_len():
+    maxlen = max([
+        len(x.name.split('.py')[0]) for x in os.scandir('.') \
+        if x.name.endswith('.py') and x.is_file()
+    ])
+    if maxlen > 1:
+        return maxlen
+    else:
+        return 5
+
+
 def log(
         level: str = 'INFO',
         logdir: str = '.logs',
         max_bytes: int = 524288,
         backup_count: int = 2,
         logger_name: str = __name__,
-        msecs: bool = True,
+        msecs: bool = False,
     ) -> logging.Logger:
     
     loglevel = {
@@ -101,38 +100,47 @@ def log(
         level = logging.INFO
     else:
         err_message = None
-
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(level)
-    asctime = '{asctime:15s}'
-    module = '{module:>7s}'
-    levelname = '#c{levelname:>8s}#r'
-    message = '{message}'
-    if msecs:
-        _msecs = '.{msecs:03.0f}'
+    
+    logdict = logging.root.manager.loggerDict
+    if logger_name in logdict.keys():
+        return logdict[logger_name]
     else:
-        _msecs = ''
-    formatter = ColorFormatter(
-        fmt=f'{asctime}{_msecs}| {mod.aqua(module)} {levelname}| {message}',
-        datefmt='%Y-%m-%d %H:%M:%S',
-        style='{'
-   )
-    if not os.path.isdir(logdir): 
-        os.mkdir(logdir)
+        module_len = max_len()
+        logger = logging.getLogger(logger_name)
+        #logger.propagate = False
+        logger.setLevel(level)
+        asctime = '{asctime:15s}'
+        #module = '{module:>10s}'
+        module = '{:>{width}s}'.format('module', width=module_len)
+        levelname = '#c{levelname:>8s}#r'
+        message = '{message}'
+        if msecs:
+            _msecs = '.{msecs:03.0f}'
+        else:
+            _msecs = ''
+        formatter = ColorFormatter(
+            fmt=f'{asctime}{_msecs}| {mod.aqua(module)} {levelname}| {message}',
+            datefmt='%Y-%m-%d %H:%M:%S',
+            style='{'
+   )    
+        if not os.path.isdir(logdir): 
+            os.mkdir(logdir)
 
-    file_handler = RotatingFileHandler(
-        f'{logdir}/{os.path.split(os.path.abspath("."))[-1]}.log',
-        mode='a', maxBytes=max_bytes,
-        backupCount=backup_count, encoding=None, 
-        delay=0
-    )
-    file_handler.setLevel(level)
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-    if err_message is not None:
-        logger.warning(f'{err_mesage}. level options: {list(loglevel.keys())}')
-    return logger
+        file_handler = RotatingFileHandler(
+            f'{logdir}/{os.path.split(os.path.abspath("."))[-1]}.log',
+            mode='a', maxBytes=max_bytes,
+            backupCount=backup_count, encoding=None, 
+            delay=0
+        )
+        file_handler.setLevel(level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+        if err_message is not None:
+            logger.warning(
+                f'{err_mesage}. level options: {list(loglevel.keys())}'
+            )
+        return logger
 
